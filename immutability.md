@@ -178,7 +178,9 @@ to ensure that none of them modify `c`.
 ### Enabling Safe Sharing of Objects?
 
 Unfortunately in Julia, there is not much equivalent to what Java has since there is no concept of a
-"static field" in Julia. One possibility to get closer would be to use a global variable that is constant.
+"static field" in Julia. Furthermore, Julia does not have the concept of access modifiers like the ones
+available in languages like Java. One possibility to get closer would be to use a global variable
+that is constant.
 
 ```julia
 struct Point
@@ -193,8 +195,9 @@ end
 const ORIGIN = Point()
 ```
 
-The issue with this is that we replace the default constructor of `Point` with an inner constructor.
-This means that we can still have statements that create Points from arbitrary coordinates.
+The issue with this is that we cannot replace the default constructor of `Point` with an inner constructor.
+This means that we can still have statements that create Points from arbitrary coordinates, since Julia
+does not have access modifiers unlike Java.
 
 An alternative (and maybe better?) way to do this is to define a wrapper type to handle different
 initialisations of the underlying data. However, this will only work as part of a package, where
@@ -226,7 +229,7 @@ function Point(x, y)
 end
 ```
 
-### Enabling Safe Sharing of Internals
+### Enabling Safe Sharing of Internals ?
 
 Let's consider a new `ImmutableArray` composite type below. Note that the inner constructor
 for `ImmutableArray` takes in a variable number of arguments, which should be of type `T`.
@@ -282,3 +285,7 @@ function subarray(a::ImmutableArray{T}, left::Int, right::Int) where {T}
     return ImmutableArray{T}(a.array, a.left + left - 1, a.left + right - 1)
 end
 ```
+
+Note that we still have a similar problem we had in the previous section, where even though we
+have replaced the inner constructor, we can technically still create a completely new ImmutableArray
+since the inner constructor and fields are still "publicly available".
