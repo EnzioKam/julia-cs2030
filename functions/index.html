@@ -1,1 +1,69 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/julia-cs2030/libs/highlight/github.min.css"> <link rel=stylesheet  href="/julia-cs2030/css/jtd.css"> <link rel=icon  href="/julia-cs2030/assets/favicon.ico"> <title>Immutability</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/julia-cs2030/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/julia-cs2030/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/julia-cs2030/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> <li class="menu-list-item {{ispage Functions/*}}active{{end}}"><a href="/julia-cs2030/functions/" class="menu-list-link {{ispage Functions}}active{{end}}"> Functions</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=functions ><a href="#functions" class=header-anchor >Functions</a></h1> <div class=page-foot > <div class=copyright > Last modified: August 09, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </div> </div> </div> </div> <!-- end of class page-wrap--> <script src="/julia-cs2030/libs/highlight/highlight.pack.js"></script> <script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: ' '});</script>
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/julia-cs2030/libs/katex/katex.min.css"> <link rel=stylesheet  href="/julia-cs2030/libs/highlight/github.min.css"> <link rel=stylesheet  href="/julia-cs2030/css/jtd.css"> <link rel=icon  href="/julia-cs2030/assets/favicon.ico"> <title>Immutability</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/julia-cs2030/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/julia-cs2030/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/julia-cs2030/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> <li class="menu-list-item {{ispage Functions/*}}active{{end}}"><a href="/julia-cs2030/functions/" class="menu-list-link {{ispage Functions}}active{{end}}"> Functions</a> <li class="menu-list-item {{ispage More on FP/*}}active{{end}}"><a href="/julia-cs2030/moreonfp/" class="menu-list-link {{ispage More on FP}}active{{end}}"> More on FP</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=functions ><a href="#functions" class=header-anchor >Functions</a></h1> <div class=franklin-toc ><ol><li><a href="#pure_functions">Pure Functions</a><ol><li><a href="#side_effects">Side Effects</a><li><a href="#referential_transparency">Referential Transparency</a></ol><li><a href="#functions_as_first-class_objects_in_julia">Functions as First-Class Objects in Julia</a></ol></div> <h2 id=pure_functions ><a href="#pure_functions" class=header-anchor >Pure Functions</a></h2> <h3 id=side_effects ><a href="#side_effects" class=header-anchor >Side Effects</a></h3> <p>Ideally, functions in our programs should behave the same as functions in mathematics. For a particular input, a pure function should compute and return an output, and do nothing else. There should be no side effects – writing to files, printing to standard output, mutate other variables or arguments, or throwing exceptions / errors.</p> <p>Functions in Julia cannot be pure by default, since they can alter and be affected by the global state of the program. Furthermore, they can be called on any parameter type if there are no type annotations for the parameters, and they can possibly return any type if there are no type annotations for the return value. However, with type annotations we can try to make the functions we define act like pure functions.</p> <p>Let&#39;s look at some examples of pure functions: w</p> <pre><code class=language-julia >function square&#40;x::Int&#41;
+    return x * x
+end
+
+function add&#40;x::Int, y::Float64&#41;
+    return x &#43; y
+end</code></pre> <p>And some non-pure functions:</p> <pre><code class=language-julia ># May throw exception if y is not a number.
+# Annoate y&#39;s type to make it pure.
+function divide&#40;x::Int, y&#41;
+    return x / y
+end
+
+# count is a global variable, may give different results
+# for the same x. Note how there is no global keyword.
+function increase_count&#40;x&#41;
+    return count &#43; i
+end
+
+# Does not return a value and mutates count.
+# The global keyword is required to mutate it.
+function incrCount&#40;int i&#41;
+    global count
+    count &#43;&#61; i
+    return nothing
+end
+
+# The array is mutated.
+function add_to_array&#33;&#40;array, x&#41;
+    append&#33;&#40;array, x&#41;
+end</code></pre> <p>Notice that for <code>add_to_array&#33;</code>, the function has a <code>&#33;</code> at the end of it&#39;s name. In Julia, it is the convention that functions that will modify their arguments have a <code>&#33;</code> at the end of their name. Some examples in <code>Base</code> include <code>empty&#33;</code> and <code>push&#33;</code>.<sup id="fnref:1"><a href="#fndef:1" class=fnref >[1]</a></sup></p> <p>With our composite types being immutable by default, it makes it easier for us to define functions that have no side effects&#33;</p> <h3 id=referential_transparency ><a href="#referential_transparency" class=header-anchor >Referential Transparency</a></h3> <p>Another property of pure functions is referential transparency. An expression is called referentially transparent if it can be replaced with its corresponding value &#40;and vice-versa&#41; without changing the program&#39;s behavior. That is, if I have <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy=false >(</mo><mi>x</mi><mo stretchy=false >)</mo><mo>=</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">f(x) = y</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class=mopen >(</span><span class="mord mathnormal">x</span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span>, I should be able to replace all occurrences of <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy=false >(</mo><mi>x</mi><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">f(x)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class=mopen >(</span><span class="mord mathnormal">x</span><span class=mclose >)</span></span></span></span> with <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span>.</p> <p>This means we want the function to be <em>deterministic</em> - it should produce the same output for a particular input <strong>every single time</strong>. For example, the following is not deterministic:</p> <pre><code class=language-julia ># Returns a random integer in the range &#91;x, y&#93;
+function get_range&#40;x::Int, y::Int&#41;
+    return rand&#40;1:5&#41;
+end</code></pre> <p>The function <code>get_range</code> is not pure since we cannot ensure that it will always give the same result. Functions that give random results or depend on some other state that is not dependent on the parameters of the function are not pure functions.</p> <p>The use of pure functions by applying and composing them to build a program is the core of functional programming. Examples of functional programming languages include Haskell, OCaml, Erlang, Clojure, F#, and Elixir. Julia is not a functional programming language, but we can emulate some of the constructs commonly found in functional programming languages.</p> <h2 id=functions_as_first-class_objects_in_julia ><a href="#functions_as_first-class_objects_in_julia" class=header-anchor >Functions as First-Class Objects in Julia</a></h2> <p>Functions in Julia are first-class objects: they can be assigned to variables, and called using the standard function call syntax from the variable they have been assigned to. They can be used as arguments to other functions, can be used as another function&#39;s return value, and they can be created anonymously.</p> <pre><code class=language-julia-repl >julia&gt; a &#61; &#40;&#41; -&gt; &quot;Hello World&quot;;
+julia&gt; a&#40;&#41;
+&quot;Hello World&quot;
+
+julia&gt; function make_hw&#40;func&#41;
+           return func
+       end
+make_hw &#40;generic function with 1 method&#41;
+
+julia&gt; make_hw&#40;a&#41;
+#7 &#40;generic function with 1 method&#41;
+
+julia&gt; make_hw&#40;a&#41;&#40;&#41;
+&quot;Hello World&quot;</code></pre> <p>We see in the first line of code above that a function is initialised without any parameters, represented by <code>&#40;&#41;</code>, which returns a string, and is assigned to the variable <code>a</code>. This is an example of an anonymous function, since there is no name associated to it in the Julia namespace. Another example would be <code>&#40;x, y&#41; -&gt; x &#43; y</code>, which is a anonymous function that takes in two parameters and returns their sum. The rest of the example shows how the function <code>make_hw</code> takes in a function as a parameter, outputs the function as the return value, and how the function can be evaluated.</p> <p>An example of how to make use of the fact that functions are first-class objects is in sorting, when we may want to compare elements of an array, but not use their natural or predefined ordering.</p> <pre><code class=language-julia-repl >julia&gt; names &#61; &#91;&quot;john&quot;, &quot;adam&quot;, &quot;sam&quot;, &quot;david&quot;, &quot;jane&quot;, &quot;mary&quot;&#93;;
+julia&gt; sort&#40;names&#41;
+6-element Vector&#123;String&#125;:
+ &quot;adam&quot;
+ &quot;david&quot;
+ &quot;jane&quot;
+ &quot;john&quot;
+ &quot;mary&quot;
+ &quot;sam&quot;
+
+julia&gt; sort&#40;names, by &#61; x -&gt; x&#91;3&#93;&#41;
+6-element Vector&#123;String&#125;:
+ &quot;adam&quot;
+ &quot;john&quot;
+ &quot;sam&quot;
+ &quot;jane&quot;
+ &quot;mary&quot;
+ &quot;david&quot;</code></pre> <p>In the second <code>sort</code> call, we specify an anonymous function for the parameter <code>by</code>, which makes the sort compare the elements of the array based on the third character of each element.</p> <p>Even if the ordering is not defined, we can still sort composite types by supplying a comparison function to the <code>lt</code> parameter:</p> <pre><code class=language-julia-repl >julia&gt; pts &#61; &#91;Point&#40;1.5, 2.5&#41;, Point&#40;1.7, -5.1&#41;, Point&#40;-3.0, 7.2&#41;&#93;;
+
+julia&gt; sort&#40;pts, lt &#61; &#40;a, b&#41; -&gt; a.x &lt; b.x&#41;
+3-element Vector&#123;Point&#125;:
+ Point&#40;-3.0, 7.2&#41;
+ Point&#40;1.5, 2.5&#41;
+ Point&#40;1.7, -5.1&#41;</code></pre> <table class=fndef  id="fndef:1"> <tr> <td class=fndef-backref ><a href="#fnref:1">[1]</a> <td class=fndef-content >Note that in Julia, the <code>return</code> keyword is optional. Julia will return the result of the last statement whenever available, or return <code>nothing</code> if it cannot be found. In the example above, <code>add_to_array</code> will return the return value of <code>append&#33;</code> - original array in the argument that has been modified. </table> <div class=page-foot > <div class=copyright > Last modified: August 09, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </div> </div> </div> </div> <!-- end of class page-wrap--> <script src="/julia-cs2030/libs/highlight/highlight.pack.js"></script> <script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: ' '});</script>
