@@ -1,0 +1,4 @@
+Sitemap: https://enziokam.github.io/julia-cs2030/sitemap.xml
+
+User-agent: *
+Disallow:

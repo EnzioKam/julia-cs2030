@@ -1,0 +1,169 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/highlight/github.min.css"> <link rel=stylesheet  href="/css/jtd.css"> <link rel=icon  href="/assets/favicon.ico"> <title>Immutability</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=immutability ><a href="#immutability" class=header-anchor >Immutability</a></h1> <div class=franklin-toc ><ol><li><a href="#mutable_point_and_circle">Mutable Point and Circle</a><li><a href="#immutable_point_and_circle">Immutable Point and Circle</a><li><a href="#advantages_of_immutability">Advantages of Immutability</a><ol><li><a href="#ease_of_understanding">Ease of Understanding</a><li><a href="#enabling_safe_sharing_of_objects">Enabling Safe Sharing of Objects?</a><li><a href="#enabling_safe_sharing_of_internals">Enabling Safe Sharing of Internals</a></ol></ol></div> <p>We can deal with software complexity by encapsulating and hiding the complexity behind abstraction barriers, by using a language with a strong type system and adhering to the subtyping substitution principle, and by applying the abstraction principles and reusing code written as functions, classes, and parametric types.</p> <p>Another useful strategy is to avoid change altogether. This can be done by creating instances of composite types using Julia&#39;s default <code>struct</code>, which is immutable. The created instance of the Composite type cannot have any visible changes outside its abstraction barrier. This means that every method called on the instance must behave the same way throughout the lifetime of the instance.</p> <h2 id=mutable_point_and_circle ><a href="#mutable_point_and_circle" class=header-anchor >Mutable Point and Circle</a></h2> <p>Let&#39;s first define two types, <code>Point</code> and <code>Circle</code>, and some related methods, but let <code>Point</code> and <code>Circle</code> be mutable.</p> <pre><code class=language-julia >mutable struct Point
+    x::Float64
+    y::Float64
+end
+
+mutable struct Circle
+    centre::Point
+    radius::Float64
+end
+
+function get_area&#40;c::Circle&#41;
+    return π * c.radius^2
+end
+
+function contains&#40;c::Circle, p::Point&#41;
+    return &#40;p.x - c.centre.x&#41;^2 &#43; &#40;p.y - c.centre.y&#41;^2 &lt; c.radius^2
+end
+
+function move_to&#40;p::Point, x, y&#41;
+    p.x &#61; x
+    p.y &#61; y
+end
+
+function move_to&#40;c::Circle, x, y&#41;
+    move_to&#40;c.centre, x, y&#41;
+end</code></pre> <p>There are many advantages of why we want to make our composite type immutable when possible. Let&#39;s see what happens when we try to move only <code>c1</code>.</p> <pre><code class=language-julia >p &#61; Point&#40;0, 0&#41;
+c1 &#61; Circle&#40;p, 1&#41;
+c2 &#61; Circle&#40;p, 4&#41;
+move_to&#40;c1, 1, 1&#41;</code></pre> <p>Calling <code>move_to</code> on <code>c1</code> changes the center <code>Point</code> of both both <code>c1</code> and <code>c2</code>, since both <code>c1</code> and <code>c2</code> sharing the same point.</p> <pre><code class=language-julia-repl >julia&gt; @show c1
+c1 &#61; Circle&#40;Point&#40;1.0, 1.0&#41;, 1.0&#41;
+julia&gt; @show c2
+c2 &#61; Circle&#40;Point&#40;1.0, 1.0&#41;, 4.0&#41;</code></pre> <p>One way to avoid this is by creating two separate points for each <code>Circle</code>:</p> <pre><code class=language-julia >p1 &#61; Point&#40;0, 0&#41;
+c1 &#61; Circle&#40;p1, 1&#41;
+p2 &#61; Point&#40;0, 0&#41;
+c2 &#61; Circle&#40;p2, 4&#41;
+move_to&#40;c1, 1, 1&#41;</code></pre> <p>Now calling <code>move_to</code> on <code>c1</code> does not change the center <code>Point</code> of <code>c2</code>:</p> <pre><code class=language-julia-repl >julia&gt; @show c1
+c1 &#61; Circle&#40;Point&#40;1.0, 1.0&#41;, 1.0&#41;
+
+julia&gt; @show c2
+c2 &#61; Circle&#40;Point&#40;1.0, 1.0&#41;, 4.0&#41;</code></pre> <p>By creating new instances, we avoid the two <code>Circle</code> instances sharing the same reference to a single <code>Point</code> instance. This fix, however, comes with extra costs in computational resources as the number of objects to increase rapidly.</p> <h2 id=immutable_point_and_circle ><a href="#immutable_point_and_circle" class=header-anchor >Immutable Point and Circle</a></h2> <p>We can make our <code>Point</code> and <code>Circle</code> types immutable by removing the <code>mutable</code> keyword in the <code>struct</code> definition:</p> <pre><code class=language-julia >struct Point
+    x::Float64
+    y::Float64
+end
+
+struct Circle
+    centre::Point
+    radius::Float64
+end</code></pre> <p>Now, you cannot reassign any of the fields after initialisation:</p> <pre><code class=language-julia-repl >julia&gt; c &#61; Point&#40;1.0, 2.0&#41;
+Point&#40;1.0, 2.0&#41;
+
+julia&gt; c.x
+1.0
+
+julia&gt; c.x &#61; 1.5
+ERROR: setfield&#33; immutable struct of type Point cannot be changed</code></pre> <p>Concrete types in Julia also cannot be subtyped, which is somewhat equivalent to declaring a class <code>final</code> in a language like Java.</p> <pre><code class=language-julia-repl >julia&gt; struct Origin &lt;: Point end
+ERROR: invalid subtyping in definition of Origin</code></pre> <p>Now, let&#39;s redefine the <code>move_to</code> methods for <code>Point</code> and <code>Circle</code>:</p> <pre><code class=language-julia >function move_to&#40;p::Point, x, y&#41;
+    return Point&#40;x, y&#41;
+end
+
+function move_to&#40;c::Circle, x, y&#41;
+    return Circle&#40;move_to&#40;c.centre, x, y&#41;, c.radius&#41;
+end
+
+p &#61; Point&#40;0, 0&#41;
+c1 &#61; Circle&#40;p, 1&#41;
+c2 &#61; Circle&#40;p, 4&#41;
+move_to&#40;c1, 1, 1&#41;</code></pre> <p>Now, neither <code>c1</code> nor <code>c2</code> are modified, even after <code>move_to</code> is called. To update <code>c1</code>, we will have to reassign the newly created instance to it by calling <code>c1 &#61; move_to&#40;c1, 1, 1&#41;</code>.</p> <pre><code class=language-julia-repl >julia&gt; @show c1
+c1 &#61; Circle&#40;Point&#40;0.0, 0.0&#41;, 1.0&#41;
+
+julia&gt; @show c2
+c2 &#61; Circle&#40;Point&#40;0.0, 0.0&#41;, 4.0&#41;
+
+julia&gt; @show c1 &#61; move_to&#40;c1, 1, 1&#41;
+c1 &#61; move_to&#40;c1, 1, 1&#41; &#61; Circle&#40;Point&#40;1.0, 1.0&#41;, 1.0&#41;</code></pre> <h2 id=advantages_of_immutability ><a href="#advantages_of_immutability" class=header-anchor >Advantages of Immutability</a></h2> <h3 id=ease_of_understanding ><a href="#ease_of_understanding" class=header-anchor >Ease of Understanding</a></h3> <p>Code written with immutable types is easier to reason with and easier to understand. Suppose we create a <code>Circle</code> and assign it to a local variable <code>c</code>:</p> <pre><code class=language-julia >c &#61; Circle&#40;Point&#40;1, 2&#41;, 3&#41;</code></pre>
+<p>We can reuse <code>c</code> by passing it other methods or as fields of other composite types. These other methods can invoke methods that dispatch on <code>c</code>. However since <code>c</code> is immutable, we can guarantee that c is still a circle centered at <code>&#40;1, 2&#41;</code> with a radius of <code>3</code>. The immutability makes it significantly easier to read, understand, and debug our code.</p>
+<p>If the <code>Point</code> and <code>Circle</code> types were immutable, we will have to check all methods that dispatch on <code>c</code> to ensure that none of them modify <code>c</code>.</p>
+<h3 id=enabling_safe_sharing_of_objects ><a href="#enabling_safe_sharing_of_objects" class=header-anchor >Enabling Safe Sharing of Objects?</a></h3>
+<p>Unfortunately in Julia, there is not much equivalent to what Java has since there is no concept of a &quot;static field&quot; in Julia. One possibility to get closer would be to use a global variable that is constant.</p>
+<pre><code class=language-julia >struct Point
+    x::Float64
+    y::Float64
+end
+
+function Point&#40;&#41;
+    return Point&#40;0, 0&#41;
+end
+
+const ORIGIN &#61; Point&#40;&#41;</code></pre>
+<p>The issue with this is that we replace the default constructor of <code>Point</code> with an inner constructor. This means that we can still have statements that create Points from arbitrary coordinates.</p>
+<p>An alternative &#40;and maybe better?&#41; way to do this is to define a wrapper type to handle different initialisations of the underlying data. However, this will only work as part of a package, where you can decide which types and functions you want to export for the end-user to use.</p>
+<pre><code class=language-julia >module Shapes
+
+export Point
+
+struct Data
+    x::Float64
+    y::Float64
+end
+
+struct Point
+    p::Data
+    function Point&#40;&#41;
+        return new&#40;Data&#40;0, 0&#41;&#41;
+    end
+end
+
+function Point&#40;x, y&#41;
+    if x &#61;&#61; 0 &amp;&amp; y &#61;&#61; 0
+        return Point&#40;&#41;
+    else
+        return Point&#40;Data&#40;x, y&#41;&#41;
+    end
+end</code></pre>
+<h3 id=enabling_safe_sharing_of_internals ><a href="#enabling_safe_sharing_of_internals" class=header-anchor >Enabling Safe Sharing of Internals</a></h3>
+<p>Let&#39;s consider a new <code>ImmutableArray</code> composite type below. Note that the inner constructor for <code>ImmutableArray</code> takes in a variable number of arguments, which should be of type <code>T</code>.</p>
+<pre><code class=language-julia ># get is a default function in Base, needs to be imported
+import Base.get
+
+struct ImmutableArray&#123;T&#125;
+    array::Vector&#123;T&#125;
+    function ImmutableArray&#123;T&#125;&#40;x...&#41; where &#123;T&#125;
+        return new&#123;T&#125;&#40;collect&#40;x&#41;&#41;
+    end
+end
+
+function get&#40;a::ImmutableArray, index::Int&#41;
+    return a.array&#91;index&#93;
+end</code></pre>
+<p>Suppose we want to implement a method called <code>subarray</code>, that returns a new ImmutableArray containing the elements between two indices <code>left</code> and <code>right</code>. The naive way would be to copy every element in this range into a new instance, which becomes expensive if we store many elements. Instead, what we can do is use the same array by storing the <code>left</code> and <code>right</code> indices.</p>
+<pre><code class=language-julia >struct ImmutableArray&#123;T&#125;
+    array::Vector&#123;T&#125;
+    left::Int
+    right::Int
+    function ImmutableArray&#40;a::Vector&#123;T&#125;, l, r&#41; where &#123;T&#125;
+        return new&#123;T&#125;&#40;a, l, r&#41;
+    end
+end
+
+function ImmutableArray&#123;T&#125;&#40;x::T...&#41; where &#123;T&#125;
+    if length&#40;x&#41; &#61;&#61; 0
+        return ImmutableArray&#123;T&#125;&#40;collect&#40;x&#41;, 0, 0&#41;
+    else
+        return ImmutableArray&#123;T&#125;&#40;collect&#40;x&#41;, 1, length&#40;x&#41;&#41;
+    end
+end
+
+function get&#40;a::ImmutableArray, index::Int&#41;
+    if index &lt; 1 || a.left &#43; index - 1 &gt; a.right
+        throw&#40;BoundsError&#40;a, index&#41;&#41;
+    end
+    return a.array&#91;a.left &#43; index - 1&#93;
+end
+
+function subarray&#40;a::ImmutableArray&#123;T&#125;, left::Int, right::Int&#41; where &#123;T&#125;
+    return ImmutableArray&#123;T&#125;&#40;a.array, a.left &#43; left - 1, a.left &#43; right - 1&#41;
+end</code></pre>
+<div class=page-foot >
+  <div class=copyright >
+    Last modified: August 09, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+  </div>
+</div>
+</div>
+    </div> 
+    </div> 
+    </div> <!-- end of class page-wrap-->
+    
+    
+      <script src="/libs/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
