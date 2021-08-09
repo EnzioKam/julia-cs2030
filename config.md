@@ -16,7 +16,9 @@ generate_rss = false
 website_title = "Julia for CS2030"
 website_descr = "A partial recreation of CS2030 content using Julia"
 website_url   = "https://enziokam.github.io/julia-cs2030/"
-menubar_items = ["Home" => "/", "Immutability" => "immutability"]
+prepath = "julia-cs2030"
+menubar_items = ["Home" => "/", "Immutability" => "immutability",
+                "Functions" => "functions"]
 +++
 
 <!--
