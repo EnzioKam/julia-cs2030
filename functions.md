@@ -163,5 +163,56 @@ julia> sort(pts, lt = (a, b) -> a.x < b.x)
  Point(1.7, -5.1)
 ```
 
+## Some comparisons with Java
+
+The way Java implemented functions to be first-class was through functional interfaces.[^2] By specifying
+a single abstract method to be overriden when implementing the interface. Examples of this include
+`Comparator` and it's `compare` method and `Function` and it's `apply` method.
+
+```julia
+Function<Integer, Integer> add1 = new Function<>() {
+    @Override
+    public Integer apply(Integer t) {
+        return t + 1;
+    }
+};
+Function<Integer, Integer> add3 = new Function<>() {
+    @Override
+    public Integer apply(Integer t) {
+        return t + 1;
+    }
+};
+Function<Integer, Integer> composed = add1.compose(add3);
+Integer result = composed.apply(0);
+```
+G
+The above example shows how we can implement function composition in Java. With lambda expressions from
+Java 8 onwards, we can shorten this to:
+
+```julia
+Function<Integer, Integer> add1 = x -> x + 1;
+Function<Integer, Integer> add3 = x -> x + 3;
+Function<Integer, Integer> composed = add1.compose(add3);
+Integer result = composed.apply(0);
+```
+
+The equivalent in Julia would be the following:
+
+```julia
+add1 = x -> x + 1
+add3 = x -> x + 3
+composed = add1 ∘ add3
+# Alternatively
+composed = ComposedFunction(add1, add3)
+result = composed(0)
+```
+
+The Julia version looks very similar to the Java version using lambda expressions. Personally, I dislike
+the fact that I have to always go through the functional interface in Java. Also, we are still limited by
+the type system in Java. `add1` will work on `Float64` in Julia, but `add1` cannot work on `Double` in Java,
+which is (at least to me) quite counterintuitive since you would expect `x -> x + 1` to work for all numbers.
+(Which is why I prefer Julia's type conversion over Java's type declaration.)
 
 [^1]: Note that in Julia, the `return` keyword is optional. Julia will return the result of the last statement whenever available, or return `nothing` if it cannot be found. In the example above, `add_to_array` will return the return value of `append!` - original array in the argument that has been modified.
+[^2]: Of course, there are method references and anonymous inner classes. But the comparisons with that that can be another article on it's own.
+
