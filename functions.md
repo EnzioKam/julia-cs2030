@@ -211,7 +211,24 @@ The Julia version looks very similar to the Java version using lambda expression
 the fact that I have to always go through the functional interface in Java. Also, we are still limited by
 the type system in Java. `add1` will work on `Float64` in Julia, but `add1` cannot work on `Double` in Java,
 which is (at least to me) quite counterintuitive since you would expect `x -> x + 1` to work for all numbers.
-(Which is why I prefer Julia's type conversion over Java's type declaration.)
+(Which is why I prefer Julia's type conversion using annotations over Java's type declaration, especially for
+function parameters.) There is also the issue of Java generics not working on primitives, which leads to the
+use of wrapper types like `Integer` and `Double`.
+
+Julia's disadvantage comes from that fact that type mismatches can only be caught at runtime.
+
+```julia
+# Julia
+function f(x, y) return x / y end
+f("10", "5")
+
+# Java
+int f(int x, int y) { return x / y; }
+f("10", "5")
+```
+
+In the above example, Java will detect the type mismatch at compile time, but Julia will only detect the type mismatch
+when the statement `f("10", "5")` is executed.
 
 [^1]: Note that in Julia, the `return` keyword is optional. Julia will return the result of the last statement whenever available, or return `nothing` if it cannot be found. In the example above, `add_to_array` will return the return value of `append!` - original array in the argument that has been modified.
 [^2]: Of course, there are method references and anonymous inner classes. But the comparisons with that that can be another article on it's own.
