@@ -21,7 +21,7 @@ return value. However, with type annotations we can try to make the functions we
 functions.
 
 Let's look at some examples of pure functions:
-w
+
 ```julia
 function square(x::Int)
     return x * x
@@ -185,7 +185,7 @@ Function<Integer, Integer> add3 = new Function<>() {
 Function<Integer, Integer> composed = add1.compose(add3);
 Integer result = composed.apply(0);
 ```
-G
+
 The above example shows how we can implement function composition in Java. With lambda expressions from
 Java 8 onwards, we can shorten this to:
 

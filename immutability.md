@@ -231,7 +231,7 @@ end
 
 ### Enabling Safe Sharing of Internals ?
 
-Let's consider a new `ImmutableArray` composite type below. Note that the inner constructor
+Let's consider a new `ImmutableArray`[^1] composite type below. Note that the inner constructor
 for `ImmutableArray` takes in a variable number of arguments, which should be of type `T`.
 
 ```julia
@@ -289,3 +289,6 @@ end
 Note that we still have a similar problem we had in the previous section, where even though we
 have replaced the inner constructor, we can technically still create a completely new ImmutableArray
 since the inner constructor and fields are still "publicly available".
+
+[^1]: Julia already has the `Tuple` type, which is a parameterised immutable type. It can act like a immutable container, but every element's type is a parameter of the tuple. The `NTuple` type on the other hand provides an immutable container where every element is of the same type.
+
