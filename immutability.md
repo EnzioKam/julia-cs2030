@@ -290,5 +290,41 @@ Note that we still have a similar problem we had in the previous section, where 
 have replaced the inner constructor, we can technically still create a completely new ImmutableArray
 since the inner constructor and fields are still "publicly available".
 
+## Private fields in Julia
+
+It is still somewhat possible to make fields of composite types inaccessible by replacing the functionality of
+`Base.getproperty`.
+
+```julia
+import Base.getproperty
+
+struct Pair
+    x
+    y
+end
+
+function Base.getproperty(p::Pair, field::Symbol)
+    if field == :x
+        getfield(p, :x)
+    else
+        error("$field is not accessible")
+    end
+end
+```
+
+Now when we try to access the fields, we will not be able to access `y`.
+
+```julia-repl
+julia> a = Pair(1,2)
+Pair(1, 2)
+julia> a.x
+1
+julia> a.y
+ERROR: y is not accessible
+```
+
+Since composite types are immutable, there is no need to override `Base.setproperty!` or `Base.setfield!`.
+It is also possible to override `Base.propertynames` to not show the fields that are not meant to be accessible.
+
 [^1]: Julia already has the `Tuple` type, which is a parameterised immutable type. It can act like a immutable container, but every element's type is a parameter of the tuple. The `NTuple` type on the other hand provides an immutable container where every element is of the same type.
 
