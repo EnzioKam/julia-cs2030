@@ -18,7 +18,8 @@ website_descr = "A partial recreation of CS2030 content using Julia"
 website_url   = "https://enziokam.github.io/julia-cs2030/"
 prepath = "julia-cs2030"
 menubar_items = ["Home" => "/", "Immutability" => "immutability",
-                "Functions" => "functions", "More on FP" => "moreonfp"]
+                "Functions" => "functions", "More on FP" => "moreonfp",
+                "Lazy Evaluation" => "lazyevaluation"]
 +++
 
 <!--
