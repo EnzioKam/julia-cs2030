@@ -1,4 +1,4 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/julia-cs2030/libs/highlight/github.min.css"> <link rel=stylesheet  href="/julia-cs2030/css/jtd.css"> <link rel=icon  href="/julia-cs2030/assets/favicon.ico"> <title>Immutability</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/julia-cs2030/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/julia-cs2030/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/julia-cs2030/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> <li class="menu-list-item {{ispage Functions/*}}active{{end}}"><a href="/julia-cs2030/functions/" class="menu-list-link {{ispage Functions}}active{{end}}"> Functions</a> <li class="menu-list-item {{ispage More on FP/*}}active{{end}}"><a href="/julia-cs2030/moreonfp/" class="menu-list-link {{ispage More on FP}}active{{end}}"> More on FP</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=immutability ><a href="#immutability" class=header-anchor >Immutability</a></h1> <div class=franklin-toc ><ol><li><a href="#mutable_point_and_circle">Mutable Point and Circle</a><li><a href="#immutable_point_and_circle">Immutable Point and Circle</a><li><a href="#advantages_of_immutability">Advantages of Immutability</a><ol><li><a href="#ease_of_understanding">Ease of Understanding</a><li><a href="#enabling_safe_sharing_of_objects">Enabling Safe Sharing of Objects?</a><li><a href="#enabling_safe_sharing_of_internals">Enabling Safe Sharing of Internals ?</a></ol></ol></div> <p>We can deal with software complexity by encapsulating and hiding the complexity behind abstraction barriers, by using a language with a strong type system and adhering to the subtyping substitution principle, and by applying the abstraction principles and reusing code written as functions, classes, and parametric types.</p> <p>Another useful strategy is to avoid change altogether. This can be done by creating instances of composite types using Julia&#39;s default <code>struct</code>, which is immutable. The created instance of the Composite type cannot have any visible changes outside its abstraction barrier. This means that every method called on the instance must behave the same way throughout the lifetime of the instance.</p> <h2 id=mutable_point_and_circle ><a href="#mutable_point_and_circle" class=header-anchor >Mutable Point and Circle</a></h2> <p>Let&#39;s first define two types, <code>Point</code> and <code>Circle</code>, and some related methods, but let <code>Point</code> and <code>Circle</code> be mutable.</p> <pre><code class=language-julia >mutable struct Point
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/julia-cs2030/libs/highlight/github.min.css"> <link rel=stylesheet  href="/julia-cs2030/css/jtd.css"> <link rel=icon  href="/julia-cs2030/assets/favicon.ico"> <title>Immutability</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/julia-cs2030/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/julia-cs2030/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/julia-cs2030/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> <li class="menu-list-item {{ispage Functions/*}}active{{end}}"><a href="/julia-cs2030/functions/" class="menu-list-link {{ispage Functions}}active{{end}}"> Functions</a> <li class="menu-list-item {{ispage More on FP/*}}active{{end}}"><a href="/julia-cs2030/moreonfp/" class="menu-list-link {{ispage More on FP}}active{{end}}"> More on FP</a> <li class="menu-list-item {{ispage Lazy Evaluation/*}}active{{end}}"><a href="/julia-cs2030/lazyevaluation/" class="menu-list-link {{ispage Lazy Evaluation}}active{{end}}"> Lazy Evaluation</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=immutability ><a href="#immutability" class=header-anchor >Immutability</a></h1> <div class=franklin-toc ><ol><li><a href="#mutable_point_and_circle">Mutable Point and Circle</a><li><a href="#immutable_point_and_circle">Immutable Point and Circle</a><li><a href="#advantages_of_immutability">Advantages of Immutability</a><ol><li><a href="#ease_of_understanding">Ease of Understanding</a><li><a href="#enabling_safe_sharing_of_objects">Enabling Safe Sharing of Objects?</a><li><a href="#enabling_safe_sharing_of_internals">Enabling Safe Sharing of Internals ?</a></ol><li><a href="#private_fields_in_julia">Private fields in Julia</a></ol></div> <p>We can deal with software complexity by encapsulating and hiding the complexity behind abstraction barriers, by using a language with a strong type system and adhering to the subtyping substitution principle, and by applying the abstraction principles and reusing code written as functions, classes, and parametric types.</p> <p>Another useful strategy is to avoid change altogether. This can be done by creating instances of composite types using Julia&#39;s default <code>struct</code>, which is immutable. The created instance of the Composite type cannot have any visible changes outside its abstraction barrier. This means that every method called on the instance must behave the same way throughout the lifetime of the instance.</p> <h2 id=mutable_point_and_circle ><a href="#mutable_point_and_circle" class=header-anchor >Mutable Point and Circle</a></h2> <p>Let&#39;s first define two types, <code>Point</code> and <code>Circle</code>, and some related methods, but let <code>Point</code> and <code>Circle</code> be mutable.</p> <pre><code class=language-julia >mutable struct Point
     x::Float64
     y::Float64
 end
@@ -112,7 +112,7 @@ function Point&#40;x, y&#41;
     end
 end</code></pre>
 <h3 id=enabling_safe_sharing_of_internals ><a href="#enabling_safe_sharing_of_internals" class=header-anchor >Enabling Safe Sharing of Internals ?</a></h3>
-<p>Let&#39;s consider a new <code>ImmutableArray</code> composite type below. Note that the inner constructor for <code>ImmutableArray</code> takes in a variable number of arguments, which should be of type <code>T</code>.</p>
+<p>Let&#39;s consider a new <code>ImmutableArray</code><sup id="fnref:1"><a href="#fndef:1" class=fnref >[1]</a></sup> composite type below. Note that the inner constructor for <code>ImmutableArray</code> takes in a variable number of arguments, which should be of type <code>T</code>.</p>
 <pre><code class=language-julia ># get is a default function in Base, needs to be imported
 import Base.get
 
@@ -155,9 +155,40 @@ function subarray&#40;a::ImmutableArray&#123;T&#125;, left::Int, right::Int&#41;
     return ImmutableArray&#123;T&#125;&#40;a.array, a.left &#43; left - 1, a.left &#43; right - 1&#41;
 end</code></pre>
 <p>Note that we still have a similar problem we had in the previous section, where even though we have replaced the inner constructor, we can technically still create a completely new ImmutableArray since the inner constructor and fields are still &quot;publicly available&quot;.</p>
+<h2 id=private_fields_in_julia ><a href="#private_fields_in_julia" class=header-anchor >Private fields in Julia</a></h2>
+<p>It is still somewhat possible to make fields of composite types inaccessible by replacing the functionality of <code>Base.getproperty</code>.</p>
+<pre><code class=language-julia >import Base.getproperty
+
+struct Pair
+    x
+    y
+end
+
+function Base.getproperty&#40;p::Pair, field::Symbol&#41;
+    if field &#61;&#61; :x
+        getfield&#40;p, :x&#41;
+    else
+        error&#40;&quot;&#36;field is not accessible&quot;&#41;
+    end
+end</code></pre>
+<p>Now when we try to access the fields, we will not be able to access <code>y</code>.</p>
+<pre><code class=language-julia-repl >julia&gt; a &#61; Pair&#40;1,2&#41;
+Pair&#40;1, 2&#41;
+julia&gt; a.x
+1
+julia&gt; a.y
+ERROR: y is not accessible</code></pre>
+<p>Since composite types are immutable, there is no need to override <code>Base.setproperty&#33;</code> or <code>Base.setfield&#33;</code>. It is also possible to override <code>Base.propertynames</code> to not show the fields that are not meant to be accessible.</p>
+<table class=fndef  id="fndef:1">
+    <tr>
+        <td class=fndef-backref ><a href="#fnref:1">[1]</a>
+        <td class=fndef-content >Julia already has the <code>Tuple</code> type, which is a parameterised immutable type. It can act like a immutable container, but every element&#39;s type is a parameter of the tuple. The <code>NTuple</code> type on the other hand provides an immutable container where every element is of the same type.
+    
+</table>
+
 <div class=page-foot >
   <div class=copyright >
-    Last modified: August 10, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    Last modified: August 12, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

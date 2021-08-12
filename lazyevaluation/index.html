@@ -1,0 +1,42 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/julia-cs2030/libs/highlight/github.min.css"> <link rel=stylesheet  href="/julia-cs2030/css/jtd.css"> <link rel=icon  href="/julia-cs2030/assets/favicon.ico"> <title>Lazy Evaluation</title> <div class=page-wrap > <div class=side-bar > <div class=header > <a href="/julia-cs2030/" class=title > Julia for CS2030 </a> </div> <label for=show-menu  class=show-menu >MENU</label> <input type=checkbox  id=show-menu  role=button > <div class=menu  id=side-menu > <ul class=menu-list > <li class="menu-list-item {{ispage Home/*}}active{{end}}"><a href="/julia-cs2030/" class="menu-list-link {{ispage Home}}active{{end}}"> Home</a> <li class="menu-list-item {{ispage Immutability/*}}active{{end}}"><a href="/julia-cs2030/immutability/" class="menu-list-link {{ispage Immutability}}active{{end}}"> Immutability</a> <li class="menu-list-item {{ispage Functions/*}}active{{end}}"><a href="/julia-cs2030/functions/" class="menu-list-link {{ispage Functions}}active{{end}}"> Functions</a> <li class="menu-list-item {{ispage More on FP/*}}active{{end}}"><a href="/julia-cs2030/moreonfp/" class="menu-list-link {{ispage More on FP}}active{{end}}"> More on FP</a> <li class="menu-list-item {{ispage Lazy Evaluation/*}}active{{end}}"><a href="/julia-cs2030/lazyevaluation/" class="menu-list-link {{ispage Lazy Evaluation}}active{{end}}"> Lazy Evaluation</a> </ul> </div> <div class=footer > This is <em>Just the docs</em>, adapted from the <a href="https://github.com/pmarsceill/just-the-docs" target=_blank >Jekyll theme</a>. </div> </div> <div class=main-content-wrap > <div class=main-content > <div class=main-header > <a id=github  href="https://github.com/tlienart/Franklin.jl">Franklin on GitHub</a> </div> <div class=franklin-content ><h1 id=lazy_evaluation ><a href="#lazy_evaluation" class=header-anchor >Lazy Evaluation</a></h1> <h2 id=computation_when_required ><a href="#computation_when_required" class=header-anchor >Computation when required</a></h2> <p>Consider the following program:</p> <pre><code class=language-julia >mutable struct Message
+    msg
+    count
+    function Message&#40;&#41;
+        return new&#40;&quot;&quot;, 0&#41;
+    end
+end
+
+function add_sentence&#40;t::Message, sentence::Function&#41;
+    if t.count &gt;&#61; 2
+        t.msg *&#61; sentence&#40;&#41; * &quot;\n&quot;;
+    end
+    t.count &#43;&#61; 1
+end
+
+note &#61; Message&#40;&#41;;
+a &#61; &#40;&#41; -&gt; &quot;First Line | &quot; * string&#40;today&#40;&#41;&#41;
+b &#61; &#40;&#41; -&gt; &quot;Second Line | &quot; * string&#40;today&#40;&#41;&#41;
+c &#61; &#40;&#41; -&gt; &quot;Third Line | &quot; * string&#40;today&#40;&#41;&#41;</code></pre> <p>Here, the composite type <code>Message</code> is mutable. The <code>add_sentence</code> method takes in a <code>Message</code> and a function <code>sentence</code>, whose result is concatenated to the <code>msg</code> variable if the count is greater than 2. <code>a</code>, <code>b</code> and <code>c</code> are all functions that return the string expressions. The functions are not yet evaluated - we defer the evaluation of expressions we do not need currently, and only evaluate them whenever required.</p> <pre><code class=language-julia-repl >julia&gt; add_sentence&#40;note, a&#41;;
+julia&gt; note.msg
+&quot;&quot;
+julia&gt; add_sentence&#40;note, b&#41;;
+julia&gt; note.msg
+&quot;&quot;
+julia&gt; add_sentence&#40;note, c&#41;;
+julia&gt; note.msg
+&quot;Third Line | 2021-08-12\n&quot;</code></pre> <p>Now, our expression <code>string&#40;today&#40;&#41;&#41;</code> is only evaluated when the count is greater or equals to 2, since the <code>sentence</code> argument of <code>add_sentence</code> is a function, and is not evaluated when the count is less than 2. </p> <h2 id=avoiding_repeated_computation ><a href="#avoiding_repeated_computation" class=header-anchor >Avoiding Repeated Computation</a></h2> <p>On top of deferring the evaluation, we can store the results of our computation to prevent repeated computation.</p> <pre><code class=language-julia >mutable struct Lazy
+    f::Function
+    evaluated::boolean
+    value
+    function Lazy&#40;f&#41;
+        return new&#40;f, false&#41;
+    end
+end
+
+function getvalue&#40;x::Lazy&#41;
+    if &#33;x.evaluated
+        t.value &#61; t.f&#40;&#41;
+        t.evaluated &#61; true
+    end
+    return t.value
+end</code></pre> <p>For the <code>Lazy</code> composite type, only the first call of <code>getvalue</code> will result in an evaluation of the function <code>f</code>. Any subsequent calls of <code>getvalue</code> will just retrieve the result stored in the field <code>value</code>.</p> <div class=page-foot > <div class=copyright > Last modified: August 12, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </div> </div> </div> </div> <!-- end of class page-wrap--> <script src="/julia-cs2030/libs/highlight/highlight.pack.js"></script> <script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: ' '});</script>
